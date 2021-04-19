@@ -1,11 +1,31 @@
-# [START ECHO CURRENT BRANCH]
 steps:
-- id: 'Echo Current Environment'
-  name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:'
-  entrypoint: 'sh'  
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk::debian_component_based'
+  id: scheduler
+  entrypoint: 'bash'
+  args:
+   - '-c'
+   - |
+      gcloud services enable cloudbilling.googleapis.com --project ${PROJECT_ID} > /dev/null
+      gcloud services enable cloudresourcemanager.googleapis.com --project ${PROJECT_ID} > /dev/null
+      gcloud services enable cloudbuild.googleapis.com --project ${PROJECT_ID} > /dev/null
+      gcloud services enable storage.googleapis.com --project ${PROJECT_ID} > /dev/null
+      gcloud services enable bigquery.googleapis.com --project ${PROJECT_ID} > /dev/null
+      
+      gcloud scheduler jobs create http ${PROJECT_ID}-run-trigger \
+        --schedule='0 12 * * *' \
+        --uri=https://cloudbuild.googleapis.com/v1/projects/${PROJECT_ID}/triggers/${TRIGGER_ID}:run \
+        --message-body='{\"branchName\": \"${BRANCH_NAME}\"}' \
+        --oauth-service-account-email=${PROJECT_ID}@appspot.gserviceaccount.com \
+        --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform || echo "Scheduler already exists";
+
+
+- id: 'UPDATE BIGQUERY WITH MOST RECENT DATASET'
+  name: 'gcr.io/google.com/cloudsdktool/cloud-sdk::debian_component_based'
+  entrypoint: 'bash'  
   args: 
   - '-c'
   - | 
+      set -x
       echo "******************************************"
       echo "Pulling latest Covid-19 Dataset from OWID"
       echo "******************************************"
@@ -15,18 +35,49 @@ steps:
       echo "******************************************"
       echo "Upload Dataset to GCS"
       echo "******************************************"
+      
+      BUCKET_EXISTS=$(gsutil ls gs://owid-covid-data/)
 
-      gsutil cp ./owid-covid-data.csv gs://owid-covid-data/
-
+      if [ -n "$BUCKET_EXISTS" ]; then
+        echo "UPLOADING DATASET"
+        #gsutil cp ./owid-covid-data.csv gs://owid-covid-data/
+      else
+        echo "CREATING BUCKET / UPLOADING DATASET"
+        gsutil mb -l northamerica-northeast1 gs://owid-covid-data
+        gsutil cp ./owid-covid-data.csv gs://owid-covid-data/
+      fi
+      
       echo "******************************************"
-      echo "Import New Dataset to BigQuery"
+      echo "Import Dataset to BigQuery"
       echo "******************************************"
 
-      bq --location=northamerica-northeast1 mk \
-        --dataset \
-        --default_table_expiration 0 \
-        --description "Complete Covid-19 CSV Dataset from OWID" \
-        greg-playground-310720:owid_covid_dataset
+      BQ_DATASET_EXISTS=$(bq ls --filter labels.name:owid_covid_dataset --project_id ${PROJECT_ID})
+
+      if [ -n "$BQ_DATASET_EXISTS" ]; then
+        echo "IMPORTING DATASET"
+        bq load \
+          --location=northamerica-northeast1 \
+          --source_format=CSV \
+          --autodetect \
+          --replace owid_covid_dataset.complete_worldwide_csv \
+          gs://owid-covid-data/owid-covid-data.csv
+      else
+        bq mk \
+          --location=northamerica-northeast1 \
+          --dataset \
+          --default_table_expiration 0 \
+          --description "Complete Covid-19 CSV Dataset from OWID" \
+          ${PROJECT_ID}:owid_covid_dataset
+
+        bq update --set_label name:owid_covid_dataset ${PROJECT_ID}:owid_covid_dataset
+
+        bq load \
+          --location=northamerica-northeast1 \
+          --source_format=CSV \
+          --autodetect \
+          --replace owid_covid_dataset.complete_worldwide_csv \
+        gs://owid-covid-data/owid-covid-data.csv
+      fi
 
       echo "******************************************"
       echo "Done"
