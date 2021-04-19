@@ -30,7 +30,7 @@ steps:
       
       BUCKET_EXISTS=$(gsutil ls gs://owid-covid-data/)
 
-      if [ -n "$BUCKET_EXISTS" ]; then
+      if [ -n "$(BUCKET_EXISTS)" ]; then
         echo "UPLOADING DATASET"
         gsutil cp ./owid-covid-data.csv gs://owid-covid-data/
       else
@@ -45,7 +45,7 @@ steps:
 
       BQ_DATASET_EXISTS=$(bq ls --filter labels.name:owid_covid_dataset --project_id ${PROJECT_ID})
 
-      if [ -n "$BQ_DATASET_EXISTS" ]; then
+      if [ -n "$(BQ_DATASET_EXISTS)" ]; then
         echo "IMPORTING DATASET"
         bq load \
           --location=northamerica-northeast1 \
