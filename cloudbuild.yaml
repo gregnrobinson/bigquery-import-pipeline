@@ -11,6 +11,13 @@ steps:
       gcloud services enable storage.googleapis.com --project ${PROJECT_ID} > /dev/null
       gcloud services enable bigquery.googleapis.com --project ${PROJECT_ID} > /dev/null
       
+      #gcloud beta builds triggers create cloud-source-repositories \
+      #  --repo=REPO_NAME \
+      #  --branch-pattern=main \
+      #  --build-config=BUILD_CONFIG_FILE
+
+      #gcloud alpha builds triggers list --filter=github.name=my-repo
+
       #gcloud scheduler jobs create http ${PROJECT_ID}-run-trigger \
       #  --schedule='0 12 * * *' \
       #  --uri=https://cloudbuild.googleapis.com/v1/projects/${PROJECT_ID}/triggers/${TRIGGER_ID}:run \
