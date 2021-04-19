@@ -26,20 +26,20 @@ steps:
       echo "******************************************"
 
       if [ -n "$(gsutil ls gs://owid-covid-data/)" ]; then
-        echo "UPLOADING DATASET"
         gsutil cp ./owid-covid-data.csv gs://owid-covid-data/
       else
-        echo "CREATING BUCKET / UPLOADING DATASET"
+        echo "BUCKET DOES NOT EXIST... CREATING..."
         gsutil mb -l northamerica-northeast1 gs://owid-covid-data
+        
+        echo "UPLOADING DATASET TO GCS..."
         gsutil cp ./owid-covid-data.csv gs://owid-covid-data/
       fi
       
       echo "******************************************"
-      echo "Import Dataset to BigQuery"
+      echo "Load Dataset into BigQuery"
       echo "******************************************"
 
       if [ -n "$(bq ls --filter labels.name:owid_covid_dataset --project_id ${PROJECT_ID})" ]; then
-        echo "IMPORTING DATASET"
         bq load \
           --location=northamerica-northeast1 \
           --source_format=CSV \
@@ -47,6 +47,7 @@ steps:
           --replace owid_covid_dataset.complete_worldwide_csv \
           gs://owid-covid-data/owid-covid-data.csv
       else
+        echo "BIGQUERY DATASET DOES NOT EXIST... CREATING..."
         bq mk \
           --location=northamerica-northeast1 \
           --dataset \
@@ -56,6 +57,7 @@ steps:
 
         bq update --set_label name:owid_covid_dataset ${PROJECT_ID}:owid_covid_dataset
 
+        echo "LOADING DATASET INTO BIGQUERY..."
         bq load \
           --location=northamerica-northeast1 \
           --source_format=CSV \
