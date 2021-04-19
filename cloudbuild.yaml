@@ -12,11 +12,11 @@ steps:
       gcloud services enable bigquery.googleapis.com --project ${PROJECT_ID} > /dev/null
       
       #gcloud beta builds triggers create cloud-source-repositories \
-      #  --repo=REPO_NAME \
+      #  --repo=gregnrobinson/bigquery-covid-dataprocessing \
       #  --branch-pattern=main \
-      #  --build-config=BUILD_CONFIG_FILE
+      #  --build-config=./cloudbuild.yaml
 
-      #gcloud alpha builds triggers list --filter=github.name=my-repo
+      #gcloud alpha builds triggers list --filter=github.name=gregnrobinson/bigquery-covid-dataprocessing
 
       #gcloud scheduler jobs create http ${PROJECT_ID}-run-trigger \
       #  --schedule='0 12 * * *' \
