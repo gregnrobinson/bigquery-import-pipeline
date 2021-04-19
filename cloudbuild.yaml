@@ -25,10 +25,9 @@ steps:
       #  --oauth-service-account-email=${PROJECT_ID}@appspot.gserviceaccount.com \
       #  --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform || echo "Scheduler already exists";
 
-
 - id: 'UPDATE BIGQUERY WITH MOST RECENT DATASET'
   name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:debian_component_based'
-  entrypoint: 'bash'  
+  entrypoint: 'bash'
   args: 
   - '-c'
   - | 
@@ -47,7 +46,7 @@ steps:
 
       if [ -n "$BUCKET_EXISTS" ]; then
         echo "UPLOADING DATASET"
-        #gsutil cp ./owid-covid-data.csv gs://owid-covid-data/
+        gsutil cp ./owid-covid-data.csv gs://owid-covid-data/
       else
         echo "CREATING BUCKET / UPLOADING DATASET"
         gsutil mb -l northamerica-northeast1 gs://owid-covid-data
