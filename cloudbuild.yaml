@@ -1,1 +1,33 @@
-# Create Daily BigQuery Import
+# [START ECHO CURRENT BRANCH]
+steps:
+- id: 'Echo Current Environment'
+  name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:'
+  entrypoint: 'sh'  
+  args: 
+  - '-c'
+  - | 
+      echo "******************************************"
+      echo "Pulling latest Covid-19 Dataset from OWID"
+      echo "******************************************"
+
+      curl https://covid.ourworldindata.org/data/owid-covid-data.csv --output owid-covid-data.csv
+
+      echo "******************************************"
+      echo "Upload Dataset to GCS"
+      echo "******************************************"
+
+      gsutil cp ./owid-covid-data.csv gs://owid-covid-data/
+
+      echo "******************************************"
+      echo "Import New Dataset to BigQuery"
+      echo "******************************************"
+
+      bq --location=northamerica-northeast1 mk \
+        --dataset \
+        --default_table_expiration 0 \
+        --description "Complete Covid-19 CSV Dataset from OWID" \
+        greg-playground-310720:owid_covid_dataset
+
+      echo "******************************************"
+      echo "Done"
+      echo "******************************************"
