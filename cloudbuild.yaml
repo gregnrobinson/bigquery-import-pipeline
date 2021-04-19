@@ -1,5 +1,5 @@
 steps:
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk::debian_component_based'
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:debian_component_based'
   id: scheduler
   entrypoint: 'bash'
   args:
@@ -20,7 +20,7 @@ steps:
 
 
 - id: 'UPDATE BIGQUERY WITH MOST RECENT DATASET'
-  name: 'gcr.io/google.com/cloudsdktool/cloud-sdk::debian_component_based'
+  name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:debian_component_based'
   entrypoint: 'bash'  
   args: 
   - '-c'
