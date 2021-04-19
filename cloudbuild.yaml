@@ -12,13 +12,12 @@ steps:
       gcloud services enable storage.googleapis.com --project ${PROJECT_ID} > /dev/null
       gcloud services enable bigquery.googleapis.com --project ${PROJECT_ID} > /dev/null
 
-- id: 'UPDATE BIGQUERY WITH MOST RECENT DATASET'
+- id: 'Import Dataset into BigQuery'
   name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:debian_component_based'
   entrypoint: 'bash'
   args: 
   - '-c'
   - | 
-      set -x
       echo "******************************************"
       echo "Pulling latest Covid-19 Dataset from OWID"
       echo "******************************************"
