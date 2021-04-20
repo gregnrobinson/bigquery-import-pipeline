@@ -99,6 +99,39 @@ superset init
 superset run --host=0.0.0.0 -p 8088 --with-threads --reload --debugger
 ```
 
+# Create CloudBuild Schedule
+
+You need to follow the bellow steps to trigger:
+
+1.- Create a new Service Account and add the "Cloud Build Service Account" and "Cloud Scheduler Service Agent" roles to it.
+
+2.- The HTTP method should be "post".
+
+3.- You must specify in the body field the "repoName" and the "branchName". Use the below as example.
+
+{
+  "repoName": "MyRepo",
+  "branchName": "MyBranch"
+}
+4.- Select "Add OAuth token" as Auth header.
+
+5.-Assign the created SA to your Cloud Scheduler Job that want to use to trigger your cloud Build job.
+
+6.-Use this value "https://www.googleapis.com/auth/cloud-platform" as Scope
+
+Once you have these changes, you will be able to execute the trigger.
+
+```
+gcloud scheduler jobs create http superset-bigquery-daily-import \
+  --schedule='0 12 * * *' \
+  --http-method=post \
+  --uri=https://cloudbuild.googleapis.com/v1/projects/greg-playground-310720/triggers/9a51fcd4-9135-4207-9381-d943e3ddc92a:run \
+  --message-body='{"repoName": "bigquery-import-pipeline", "branchName": "main"}' \
+  --oauth-service-account-email=greg-playground-310720@appspot.gserviceaccount.com \
+  --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform
+
+```
+
 # Reference
 https://superset.apache.org/docs/databases/bigquery
 https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/debian_component_based/Dockerfile
