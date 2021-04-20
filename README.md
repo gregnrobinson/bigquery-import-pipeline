@@ -99,4 +99,8 @@ superset init
 superset run --host=0.0.0.0 -p 8088 --with-threads --reload --debugger
 ```
 
+# Reference
 https://superset.apache.org/docs/databases/bigquery
+https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/debian_component_based/Dockerfile
+https://medium.com/@feroult/serverless-superset-on-google-cloud-87d3cf324845
+
