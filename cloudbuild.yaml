@@ -16,56 +16,66 @@ steps:
   - '-c'
   - | 
       echo "******************************************"
-      echo "Pulling latest Covid-19 Dataset from OWID"
+      echo "Pulling latest Dataset from URL"
       echo "******************************************"
 
-      curl https://covid.ourworldindata.org/data/owid-covid-data.csv --output owid-covid-data.csv
+      curl ${_BQ_DATASET_URL} --output ${_GCS_FILE_NAME}
 
       echo "******************************************"
       echo "Upload Dataset to GCS"
       echo "******************************************"
 
-      if [ -n "$(gsutil ls gs://owid-covid-data/)" ]; then
-        gsutil cp ./owid-covid-data.csv gs://owid-covid-data/
+      if [ -n "$(gsutil ls gs://${_GCS_BUCKET_NAME}/)" ]; then
+        gsutil cp ./${_GCS_FILE_NAME} gs://${_GCS_BUCKET_NAME}/
       else
         echo "BUCKET DOES NOT EXIST... CREATING..."
-        gsutil mb -l northamerica-northeast1 gs://owid-covid-data
+        gsutil mb -l ${_LOCATION} gs://${_GCS_BUCKET_NAME}
         
         echo "UPLOADING DATASET TO GCS..."
-        gsutil cp ./owid-covid-data.csv gs://owid-covid-data/
+        gsutil cp ./${_GCS_FILE_NAME} gs://${_GCS_BUCKET_NAME}/
       fi
       
       echo "******************************************"
       echo "Load Dataset into BigQuery"
       echo "******************************************"
 
-      if [ -n "$(bq ls --filter labels.name:owid_covid_dataset --project_id ${PROJECT_ID})" ]; then
+      if [ -n "$(bq ls --filter labels.name:${_BQ_DATASET_NAME} --project_id ${PROJECT_ID})" ]; then
         bq load \
-          --location=northamerica-northeast1 \
-          --source_format=CSV \
+          --location=${_LOCATION} \
+          --source_format=${_BQ_DATASET_FORMAT} \
           --autodetect \
-          --replace owid_covid_dataset.complete_worldwide_csv \
-          gs://owid-covid-data/owid-covid-data.csv
+          --replace ${_BQ_DATASET_NAME}.${_BQ_TABLE_NAME} \
+          gs://${_GCS_BUCKET_NAME}/${_GCS_FILE_NAME}
       else
         echo "BIGQUERY DATASET DOES NOT EXIST... CREATING..."
         bq mk \
-          --location=northamerica-northeast1 \
+          --location=${_LOCATION} \
           --dataset \
           --default_table_expiration 0 \
-          --description "Complete Covid-19 CSV Dataset from OWID" \
-          ${PROJECT_ID}:owid_covid_dataset
+          --description "${_BQ_DATASET_DESCRIPTION}" \
+          ${PROJECT_ID}:${_BQ_DATASET_NAME}
 
-        bq update --set_label name:owid_covid_dataset ${PROJECT_ID}:owid_covid_dataset
+        bq update --set_label name:${_BQ_DATASET_NAME} ${PROJECT_ID}:${_BQ_DATASET_NAME}
 
         echo "LOADING DATASET INTO BIGQUERY..."
         bq load \
-          --location=northamerica-northeast1 \
-          --source_format=CSV \
+          --location=${_LOCATION} \
+          --source_format=${_BQ_DATASET_FORMAT} \
           --autodetect \
-          --replace owid_covid_dataset.complete_worldwide_csv \
-        gs://owid-covid-data/owid-covid-data.csv
+          --replace ${_BQ_DATASET_NAME}.${_BQ_TABLE_NAME} \
+        gs://${_GCS_BUCKET_NAME}/${_GCS_FILE_NAME}
       fi
 
       echo "******************************************"
       echo "Done"
       echo "******************************************"
+substitutions:
+    _LOCATION: northamerica-northeast1
+    _BQ_DATASET_URL: https://covid.ourworldindata.org/data/owid-covid-data.csv
+    _BQ_DATASET_NAME: owid_covid_data
+    _BQ_DATASET_FORMAT: CSV
+    _BQ_DATASET_DESCRIPTION: Complete Covid-19 CSV Dataset from OWID
+    _BQ_TABLE_NAME: complete_worldwide_csv
+    _GCS_BUCKET_NAME: owid-covid-data
+    _GCS_FILE_NAME: owid-covid-data.csv
+    
