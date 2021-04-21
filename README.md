@@ -1,139 +1,86 @@
-# Upload Dataset to GCS
+# Table of Contents
+- [Overview](#overview)
+- [Logic Explanation](#logic-explanation)
+- [Prerequisites](#prerequisites)
+  * [Create Bot Token](#create-bot-token)
+  * [Create User Token](#create-user-token)
+  * [Set bot token variable](#set-bot-token-variable)
+- [Examples](#examples)
+  * [Create channels](#create-channels)
+  * [Rename channels prefixes](#rename-channels-prefixes)
+  * [Archive channels](#archive-channels)
+  * [Export all public channels](#export-all-public-channels)
+  * [Export all public channels that have 1 member](#export-all-public-channels-that-have-1-member)
+  * [Add a bot to all public channels](#add-a-bot-to-all-public-channels)
+  * [Export all channels that have have not been used before a date](#export-all-channels-that-have-have-not-been-used-before-a-date)
+  * [Export all users](#export-all-users)
+  * [Export all user emails](#export-all-user-emails)
+  * [Export all guest user emails](#export-all-guest-user-emails)
+  * [Archive all public channels that have only 1 member](#archive-all-public-channels-that-have-only-1-member)
+  * [Archive all public channels that match a string condition](#archive-all-public-channels-that-match-a-string-condition)
+- [Reference](#reference)
 
-```
+# Overview
 
-```
+Ths project is used to import an online dataset to a new or existing dataset in BigQuery. The pipeline will first download a dataset from a url that is provided and upload the dataset to GCS. Finally, the pipeline loads the dataset from GCS to BigQuery. The pipeline will create all the depdnacies if they don't already exist. If the BigQuery dataset and Bucket exist, the pipeline will only import the new dataset to BigQuery.
 
-# Import Dataset to BigQuery
-# Setup Apache Supeset
-A project using bigquery, SQL Alchemy, and Python to analyze the OWID Covid-19 Dataset
 
-Add Credentials
-```sh
-export GOOGLE_APPLICATION_CREDENTIALS="<path_to_json_file>"
-```
 
-https://hackersandslackers.com/bigquery-and-sql-databases/
 
-Installing Superset from Scratch
+# Setup
 
-OS Dependencies
+## Requried Permissions
 
-Superset stores database connection information in its metadata database. For that purpose, we use the cryptography Python library to encrypt connection passwords. Unfortunately, this library has OS level dependencies.
-
-Debian and Ubuntu
-
-The following command will ensure that the required dependencies are installed:
-```sh
-apt-get update -y
-apt-get install -y build-essential libssl-dev libffi-dev python3-dev python3-pip libsasl2-dev libldap2-dev python3-venv
-
-# Fedora and RHEL-derivative Linux distributions
-
-Install the following packages using the yum package manager:
-
-sudo yum install gcc gcc-c++ libffi-devel python-devel python-pip python-wheel openssl-devel cyrus-sasl-devel openldap-devel
-```
-
-# Mac OS X
-
-If you're not on the latest version of OS X, we recommend upgrading because we've found that many issues people have run into are linked to older versions of Mac OS X. After updating, install the latest version of XCode command line tools:
+Start by enabling the clodubuild API so the default service account for CloudBuild is generated.
 
 ```sh
-xcode-select --install
-We don't recommend using the system installed Python. Instead, first install the homebrew manager and then run the following commands:
-
-brew install pkg-config libffi openssl python
-
-env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" pip install cryptography==2.4.2
+gcloud services enable cloudbuild.googleapis.com --project ${PROJECT_ID} > /dev/null
 ```
 
-Let's also make sure we have the latest version of pip and setuptools:
+Assign the following permissions to the default service account for CloudBuild. The service account will be in the format `<PROJEC_NUMBER>@cloudbuild.gserviceaccount.com`.
+
+  - BigQuery Admin
+  - Cloud Build Service Account
+  - Service Account User
+  - Service Usage Admin
+  - Storage Admin
+
+Modify the substituoons in the `./cloudbuild.yaml` file to match your requirements.
 
 ```sh
-pip install --upgrade setuptools pip
-pip install dataclasses
-```
-# Python Virtual Environment
-
-We highly recommend installing Superset inside of a virtual environment. Python ships with virtualenv out of the box but you can install it using:
-
-```sh
-pip install virtualenv
-
-# You can create and activate a virtual environment using:
-# virtualenv is shipped in Python 3.6+ as venv instead of pyvenv.
-# See https://docs.python.org/3.6/library/venv.html
-python3 -m venv venv
-. venv/bin/activate
-
-echo 'export GOOGLE_APPLICATION_CREDENTIALS="/root/greg-playground-310720-dd81478fc29c.json"' >> ~/.bash_profile
-
-source ~/.bash_profile
-
-pip install pybigquery
-
-Once you activated your virtual environment, all of the Python packages you install or uninstall will be confined to this environment. You can exit the environment by running deactivate on the command line.
-
-Installing and Initializing Superset
-First, start by installing apache-superset:
-
-pip install apache-superset
-Then, you need to initialize the database:
-
-superset db upgrade
-Finish installing by running through the following commands:
-
-# Create an admin user (you will be prompted to set a username, first and last name before setting a password)
-```sh
-export FLASK_APP=superset
-superset fab create-admin
-
-# Load some data to play with
-superset load_examples
-
-# Create default roles and permissions
-superset init
-
-# To start a development web server on port 8088, use -p to bind to another port
-superset run --host=0.0.0.0 -p 8088 --with-threads --reload --debugger
+substitutions:
+    _LOCATION: northamerica-northeast1
+    _BQ_DATASET_URL: https://covid.ourworldindata.org/data/owid-covid-data.csv
+    _BQ_DATASET_NAME: owid_covid_dataset
+    _BQ_DATASET_FORMAT: CSV
+    _BQ_DATASET_DESCRIPTION: Complete Covid-19 CSV Dataset from OWID
+    _BQ_TABLE_NAME: complete_worldwide_csv
+    _GCS_BUCKET_NAME: owid-covid-data
+    _GCS_FILE_NAME: owid-covid-data.csv
 ```
 
-# Create CloudBuild Schedule
+## Link a repository containing the `./cloudbuild.yaml` file.
 
-You need to follow the bellow steps to trigger:
+Either fork this repostiroy of create your own with the `./cloudbuild.yaml` file in it.
 
-1.- Create a new Service Account and add the "Cloud Build Service Account" and "Cloud Scheduler Service Agent" roles to it.
+Go to the GCP ***console > Cloud Build > Triggers*** to connect your repository and add the trigger details matching expression. The default configuration is a push or merge to the main branch will trigger the pipeline.
 
-2.- The HTTP method should be "post".
+## Run the pipeline.
 
-3.- You must specify in the body field the "repoName" and the "branchName". Use the below as example.
+Trigger the pipeline by matching your trigger condition and thats it. 
 
-{
-  "repoName": "MyRepo",
-  "branchName": "MyBranch"
-}
-4.- Select "Add OAuth token" as Auth header.
+When the pipeline loads the dataset it replaces the table with the new dataset. If you want to append data to a table replace `--replace` with `--schema_update_option` and assign one of the following values:
 
-5.-Assign the created SA to your Cloud Scheduler Job that want to use to trigger your cloud Build job.
+- ALLOW_FIELD_ADDITION: Allow new fields to be added
+- ALLOW_FIELD_RELAXATION: Allow relaxing REQUIRED fields to NULLABLE
 
-6.-Use this value "https://www.googleapis.com/auth/cloud-platform" as Scope
-
-Once you have these changes, you will be able to execute the trigger.
-
-```
-gcloud scheduler jobs create http superset-bigquery-daily-import \
-  --schedule='0 12 * * *' \
-  --http-method=post \
-  --uri=https://cloudbuild.googleapis.com/v1/projects/greg-playground-310720/triggers/9a51fcd4-9135-4207-9381-d943e3ddc92a:run \
-  --message-body='{"repoName": "bigquery-import-pipeline", "branchName": "main"}' \
-  --oauth-service-account-email=greg-playground-310720@appspot.gserviceaccount.com \
-  --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform
-
-```
 
 # Reference
-https://superset.apache.org/docs/databases/bigquery
-https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/debian_component_based/Dockerfile
-https://medium.com/@feroult/serverless-superset-on-google-cloud-87d3cf324845
+
+- https://cloud.google.com/bigquery/docs/datasets#bq
+- https://cloud.google.com/iam/docs/understanding-roles-
+- https://cloud.google.com/bigquery/docs/reference/bq-cli-reference
+- https://cloud.google.com/storage/docs/gsutil/commands/cp
+
+
 
