@@ -28,7 +28,7 @@ Assign the following permissions to the default service account for CloudBuild. 
   - Service Usage Admin
   - Storage Admin
 
-Modify the substituoons in the `./cloudbuild.yaml` file to match your requirements.
+Modify the substitutions in the `./cloudbuild.yaml` file to match your requirements.
 
 ```sh
 substitutions:
