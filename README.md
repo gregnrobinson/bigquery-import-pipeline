@@ -82,7 +82,7 @@ gcloud scheduler jobs create http bigquery-dataset-import --schedule "0 12 * * *
    --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform
 ```
 
-Adjust the CRON schedule. If your like me and always forget the format, go to [Crontab Guru](https://crontab.guru/) to determine the CRON format for your desired execution frequency.
+Adjust the CRON schedule. If your like me and always forget the format, go to [Crontab Guru](https://crontab.guru/) and determine the CRON format for your desired execution frequency.
 
 # Reference
 
