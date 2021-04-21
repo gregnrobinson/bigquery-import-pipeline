@@ -1,7 +1,7 @@
 # Table of Contents
 - [Overview](#overview)
 - [Setup](#setup)
-  * [Requried Permissions](#requried-permissions)
+  * [Set The Requried Permissions](#requried-permissions)
   * [Link a repository containing the `./cloudbuild.yaml` file.](#link-a-repository-containing-the---cloudbuildyaml--file)
   * [Run the pipeline.](#run-the-pipeline)
 - [Reference](#reference)
