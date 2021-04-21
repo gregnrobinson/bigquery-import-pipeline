@@ -57,6 +57,32 @@ When the pipeline loads the dataset it replaces the table with the new dataset. 
 - ALLOW_FIELD_ADDITION: Allow new fields to be added
 - ALLOW_FIELD_RELAXATION: Allow relaxing REQUIRED fields to NULLABLE
 
+## Setup Pipeline Schedule
+
+Setup a CRON schedule to automatically add a new dataset to BigQuery when it becomes available.
+
+In order to set the schedule it is requried to use the app engine default service account `0@appspot.gserviceaccount.com`. If you have never used app engine, enable API using the following command:
+
+```sh
+gcloud services enable appengine.googleapis.com --project ${PROJECT_ID} > /dev/null
+```
+
+Add the following permissions to `0@appspot.gserviceaccount.com`
+
+- Cloud Build Service Account
+- Cloud Scheduler Service Agent
+
+Create a CloudBuild schedule using the following command:
+
+```sh
+gcloud scheduler jobs create http bigquery-dataset-import --schedule "0 12 * * *" \
+   --http-method=post \
+   --uri=https://cloudbuild.googleapis.com/v1/projects/${PROJECT_ID}/triggers/${TRIGGER_ID}:run \
+   --oauth-service-account-email="${PROJECT_ID}0@appspot.gserviceaccount.com" \
+   --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform
+```
+
+Adjust the CRON schedule. If your like me and always forget the format, go to [Crontab Guru](https://crontab.guru/) to determine the CRON format for your desired execution frequency.
 
 # Reference
 
@@ -64,6 +90,7 @@ When the pipeline loads the dataset it replaces the table with the new dataset. 
 - https://cloud.google.com/iam/docs/understanding-roles-
 - https://cloud.google.com/bigquery/docs/reference/bq-cli-reference
 - https://cloud.google.com/storage/docs/gsutil/commands/cp
+- https://cloud.google.com/scheduler/docs
 
 
 
