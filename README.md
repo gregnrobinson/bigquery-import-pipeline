@@ -78,7 +78,7 @@ Create a CloudBuild schedule using the following command:
 gcloud scheduler jobs create http bigquery-dataset-import --schedule "0 12 * * *" \
    --http-method=post \
    --uri=https://cloudbuild.googleapis.com/v1/projects/${PROJECT_ID}/triggers/${TRIGGER_ID}:run \
-   --oauth-service-account-email="${PROJECT_ID}0@appspot.gserviceaccount.com" \
+   --oauth-service-account-email=${PROJECT_ID}0@appspot.gserviceaccount.com \
    --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform
 ```
 
