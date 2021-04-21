@@ -64,7 +64,7 @@ Setup a CRON schedule to automatically add a new dataset to BigQuery when it bec
 In order to set the schedule it is requried to use the app engine default service account `0@appspot.gserviceaccount.com`. If you have never used app engine, enable API using the following command:
 
 ```sh
-gcloud services enable appengine.googleapis.com --project ${PROJECT_ID} > /dev/null
+gcloud services enable appengine.googleapis.com --project ${PROJECT_ID}
 ```
 
 Add the following permissions to `0@appspot.gserviceaccount.com`
