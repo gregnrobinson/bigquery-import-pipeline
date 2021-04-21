@@ -8,7 +8,7 @@
 
 # Overview
 
-Ths project is used to import an online dataset to a new or existing dataset in BigQuery. The pipeline will first download a dataset from a url that is provided and upload the dataset to GCS. Finally, the pipeline loads the dataset from GCS to BigQuery. The pipeline will create all the depdnacies if they don't already exist. If the BigQuery dataset and Bucket exist, the pipeline will only import the new dataset to BigQuery.
+Ths project is used to import an online dataset to a new or existing dataset in BigQuery using a CloudBuild Pipeline. The pipeline will first download a dataset from a url that is provided and upload the dataset to GCS. Then the pipeline loads the dataset from GCS to BigQuery. The pipeline will create all the dependencies if they don't already exist. If the BigQuery dataset and Bucket exist, the pipeline will only import the new dataset to BigQuery. So if it your first time running the pipeline or second, the pipeline will work.
 
 # Setup
 
@@ -17,10 +17,10 @@ Ths project is used to import an online dataset to a new or existing dataset in 
 Start by enabling the clodubuild API so the default service account for CloudBuild is generated.
 
 ```sh
-gcloud services enable cloudbuild.googleapis.com --project ${PROJECT_ID} > /dev/null
+gcloud services enable cloudbuild.googleapis.com --project ${PROJECT_ID}
 ```
 
-Assign the following permissions to the default service account for CloudBuild. The service account will be in the format `<PROJEC_NUMBER>@cloudbuild.gserviceaccount.com`.
+Assign the following permissions to the default service account for CloudBuild. The service account will be in the format `<PROJECT_NUMBER>@cloudbuild.gserviceaccount.com`.
 
   - BigQuery Admin
   - Cloud Build Service Account
@@ -61,6 +61,12 @@ When the pipeline loads the dataset it replaces the table with the new dataset. 
 
 Setup a CRON schedule to automatically add a new dataset to BigQuery when it becomes available.
 
+To make life easier, set your project ID in the terminall using the following command.
+
+```sh
+export PROJECT_ID="<your_project_id>"
+```
+
 In order to set the schedule it is requried to use the app engine default service account `0@appspot.gserviceaccount.com`. If you have never used app engine, enable the API using the following command:
 
 ```sh
@@ -72,7 +78,9 @@ Add the following permissions to `0@appspot.gserviceaccount.com`
 - Cloud Build Service Account
 - Cloud Scheduler Service Agent
 
-Create a CloudBuild schedule using the following command:
+Create a CloudBuild schedule using the command below. To get the trigger ID run `gcloud alpha builds triggers list`. 
+
+If your like me and always forget the format of CRON, go to [Crontab Guru](https://crontab.guru/) and determine the CRON format for your desired execution frequency.
 
 ```sh
 gcloud scheduler jobs create http bigquery-dataset-import --schedule "0 12 * * *" \
@@ -82,7 +90,7 @@ gcloud scheduler jobs create http bigquery-dataset-import --schedule "0 12 * * *
    --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform
 ```
 
-Adjust the CRON schedule. If your like me and always forget the format, go to [Crontab Guru](https://crontab.guru/) and determine the CRON format for your desired execution frequency.
+Now your pipeline will update your dataset without any internvention. This is useful for keeping graphs and charts that use BigQuery the source up to date wthout any manual intervention.
 
 # Reference
 
