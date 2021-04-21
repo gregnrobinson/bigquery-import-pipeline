@@ -61,7 +61,7 @@ When the pipeline loads the dataset it replaces the table with the new dataset. 
 
 Setup a CRON schedule to automatically add a new dataset to BigQuery when it becomes available.
 
-In order to set the schedule it is requried to use the app engine default service account `0@appspot.gserviceaccount.com`. If you have never used app engine, enable API using the following command:
+In order to set the schedule it is requried to use the app engine default service account `0@appspot.gserviceaccount.com`. If you have never used app engine, enable the API using the following command:
 
 ```sh
 gcloud services enable appengine.googleapis.com --project ${PROJECT_ID}
