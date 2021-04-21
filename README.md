@@ -1,31 +1,14 @@
 # Table of Contents
 - [Overview](#overview)
-- [Logic Explanation](#logic-explanation)
-- [Prerequisites](#prerequisites)
-  * [Create Bot Token](#create-bot-token)
-  * [Create User Token](#create-user-token)
-  * [Set bot token variable](#set-bot-token-variable)
-- [Examples](#examples)
-  * [Create channels](#create-channels)
-  * [Rename channels prefixes](#rename-channels-prefixes)
-  * [Archive channels](#archive-channels)
-  * [Export all public channels](#export-all-public-channels)
-  * [Export all public channels that have 1 member](#export-all-public-channels-that-have-1-member)
-  * [Add a bot to all public channels](#add-a-bot-to-all-public-channels)
-  * [Export all channels that have have not been used before a date](#export-all-channels-that-have-have-not-been-used-before-a-date)
-  * [Export all users](#export-all-users)
-  * [Export all user emails](#export-all-user-emails)
-  * [Export all guest user emails](#export-all-guest-user-emails)
-  * [Archive all public channels that have only 1 member](#archive-all-public-channels-that-have-only-1-member)
-  * [Archive all public channels that match a string condition](#archive-all-public-channels-that-match-a-string-condition)
+- [Setup](#setup)
+  * [Requried Permissions](#requried-permissions)
+  * [Link a repository containing the `./cloudbuild.yaml` file.](#link-a-repository-containing-the---cloudbuildyaml--file)
+  * [Run the pipeline.](#run-the-pipeline)
 - [Reference](#reference)
 
 # Overview
 
 Ths project is used to import an online dataset to a new or existing dataset in BigQuery. The pipeline will first download a dataset from a url that is provided and upload the dataset to GCS. Finally, the pipeline loads the dataset from GCS to BigQuery. The pipeline will create all the depdnacies if they don't already exist. If the BigQuery dataset and Bucket exist, the pipeline will only import the new dataset to BigQuery.
-
-
-
 
 # Setup
 
