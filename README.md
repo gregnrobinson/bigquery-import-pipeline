@@ -91,7 +91,6 @@ You need to follow the bellow steps to trigger:
 Once you have these changes, you will be able to execute the trigger. Replace`--message-body` accordingly.
 
 ```
-export PROJECT_ID=<YOUR_PROJECT_ID>
 export TRIGGER_ID=<YOUR_PROJECT_ID>
 export SERVICE_ACCOUNT_EMAIL=<YOUR_SQ_EMAIL>
 
