@@ -72,10 +72,10 @@ steps:
 substitutions:
     _LOCATION: northamerica-northeast1
     _BQ_DATASET_URL: https://covid.ourworldindata.org/data/owid-covid-data.csv
-    _BQ_DATASET_NAME: owid_covid_dataset
+    _BQ_DATASET_NAME: superset_lab
     _BQ_DATASET_FORMAT: CSV
     _BQ_DATASET_DESCRIPTION: Complete Covid-19 CSV Dataset from OWID
     _BQ_TABLE_NAME: complete_worldwide_csv
-    _GCS_BUCKET_NAME: owid-covid-data
-    _GCS_FILE_NAME: owid-covid-data.csv
+    _GCS_BUCKET_NAME: owid_covid_data
+    _GCS_FILE_NAME: owid_covid_data.csv
     
