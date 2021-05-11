@@ -73,24 +73,36 @@ In order to set the schedule it is requried to use the app engine default servic
 gcloud services enable appengine.googleapis.com --project ${PROJECT_ID}
 ```
 
-Add the following permissions to `0@appspot.gserviceaccount.com`
+You need to follow the bellow steps to trigger:
 
-- Cloud Build Service Account
-- Cloud Scheduler Service Agent
-
-Create a CloudBuild schedule using the command below. To get the trigger ID run `gcloud alpha builds triggers list`. 
-
-If your like me and always forget the format of CRON, go to [Crontab Guru](https://crontab.guru/) and determine the CRON format for your desired execution frequency.
-
-```sh
-gcloud scheduler jobs create http bigquery-dataset-import --schedule "0 12 * * *" \
-   --http-method=post \
-   --uri=https://cloudbuild.googleapis.com/v1/projects/${PROJECT_ID}/triggers/${TRIGGER_ID}:run \
-   --oauth-service-account-email=${PROJECT_ID}0@appspot.gserviceaccount.com \
-   --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform
+- Create a new Service Account and add the "Cloud Build Service Account" and "Cloud Scheduler Service Agent" roles to it.
+- The HTTP method should be "post".
+- You must specify in the body field the "repoName" and the "branchName". Use the below as example.
+```json
+{
+  "repoName": "MyRepo",
+  "branchName": "MyBranch"
+}
 ```
+- Select "Add OAuth token" as Auth header.
+- Assign the created SA to your Cloud Scheduler Job that want to use to trigger your cloud Build job.
+- Use this value "https://www.googleapis.com/auth/cloud-platform" as Scope
 
-Now your pipeline will update your dataset without any internvention. This is useful for keeping graphs and charts that use BigQuery the source up to date wthout any manual intervention.
+Once you have these changes, you will be able to execute the trigger. Replace`--message-body` accordingly.
+
+```
+export PROJECT_ID=<YOUR_PROJECT_ID>
+export TRIGGER_ID=<YOUR_PROJECT_ID>
+export SERVICE_ACCOUNT_EMAIL=<YOUR_SQ_EMAIL>
+
+gcloud scheduler jobs create http owid-covid-data-import \
+  --schedule='0 12 * * *' \
+  --http-method=post \
+  --uri=https://cloudbuild.googleapis.com/v1/projects/arctiq-data-lab/triggers/${TRIGGER_ID}:run \
+  --message-body='{"repoName": "bigquery-import-pipeline", "branchName": "main"}' \
+  --oauth-service-account-email=${SERVICE_ACCOUNT_EMAIL} \
+  --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform
+```
 
 # Reference
 
